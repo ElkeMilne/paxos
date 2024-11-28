@@ -75,7 +75,7 @@ class VotingServerTest {
     }
 
     @Test
-    void testCompareProposalNumbers() {
+    void testComparingProposalNumbers() {
         VotingServer server = new VotingServer();
         assertTrue(server.compareProposalNumbers("2:1", "1:1"));
         assertFalse(server.compareProposalNumbers("1:1", "2:1"));

@@ -2,13 +2,19 @@ package main.member;
 
 public class AcceptedProposal {
 
-    private String proposalNumber; // proposal's unique ID
-    private String proposalValue;  // value associated with the proposal
+    private String proposalNum; // proposal's unique ID
+    private String proposalVal; // value associated with the proposal
 
     // default no proposal accepted
     public AcceptedProposal() {
-        this.proposalNumber = null;
-        this.proposalValue = null;
+        this.proposalNum = null;
+        this.proposalVal = null;
+    }
+
+    // update acc prop with a new number and value
+    public void setAcceptedProposal(String proposalNum, String proposalVal) {
+        this.proposalNum = proposalNum;
+        this.proposalVal = proposalVal;
     }
 
     // get current acc proposal
@@ -16,24 +22,18 @@ public class AcceptedProposal {
         return this;
     }
 
-    // update acc prop with a new number and value.
-    public void setAcceptedProposal(String proposalNumber, String proposalValue) {
-        this.proposalNumber = proposalNumber;
-        this.proposalValue = proposalValue;
-    }
-
     // get proposal number
     public String getProposalNumber() {
-        return this.proposalNumber;
+        return this.proposalNum;
     }
 
     // get the proposal value
     public String getProposalValue() {
-        return this.proposalValue;
+        return this.proposalVal;
     }
 
     // check if the proposal is valid - not null
     public boolean isNull() {
-        return this.proposalNumber != null && this.proposalValue != null;
+        return this.proposalNum != null && this.proposalVal != null;
     }
 }

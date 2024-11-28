@@ -45,7 +45,7 @@ Paxos is a consensus algorithm that ensures distributed systems agree on a singl
 
 ## Testing Framework
 
-### `PaxosTest`
+### `PaxosTesting`
 Simulates various scenarios to ensure Paxos implementation robustness:
 1. **Concurrent Proposals:** Validates the system's ability to handle competing proposals.
 2. **Immediate Responses:** Ensures quick resolution when members respond without delay.
@@ -57,7 +57,7 @@ Verifies the functionalities of the `VotingServer` class:
 - Broadcasts messages (`testBroadcast`).
 - Compares proposal IDs (`testCompareProposalNumbers`).
 
-### `MemberTest`
+### `MemberTesting`
 Validates the behavior of the `Member` class:
 - Generates and tracks proposal IDs.
 - Simulates delays and offline states.

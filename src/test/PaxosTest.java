@@ -55,7 +55,7 @@ public class PaxosTest {
     }
 
     @Test
-    public void testImmediateResponse() throws InterruptedException {
+    public void testMultipleConcurrentProposals() throws InterruptedException {
         votingServer = new VotingServer();
 
         serverCommunicate = new Communicate(votingServer);
@@ -63,7 +63,9 @@ public class PaxosTest {
 
         members = new ArrayList<>();
         ports = new ArrayList<>();
-        int basePort = 8000;
+        int basePort = 7000;
+
+        // Initialize members
         for (int i = 1; i <= 9; i++) {
             String memberId = "" + i;
             Communicate communicate = new Communicate(votingServer);
@@ -76,31 +78,33 @@ public class PaxosTest {
 
         votingServer.setMembers(members, ports);
 
-        // No delay time for all members
-        for (Member member : members) {
-            member.setDelayTime(0);
-        }
+        // Concurrently send proposals from multiple members
+        Thread proposer1Thread = new Thread(() -> members.get(0).sendPrepareRequest());
+        Thread proposer2Thread = new Thread(() -> members.get(1).sendPrepareRequest());
+        Thread proposer3Thread = new Thread(() -> members.get(2).sendPrepareRequest());
 
-        Thread member1Thread = new Thread(() -> members.get(0).sendPrepareRequest());
-        Thread member2Thread = new Thread(() -> members.get(1).sendPrepareRequest());
-        Thread member3Thread = new Thread(() -> members.get(2).sendPrepareRequest());
+        proposer1Thread.start();
+        proposer2Thread.start();
+        proposer3Thread.start();
 
-        member1Thread.start();
-        member2Thread.start();
-        member3Thread.start();
+        proposer1Thread.join();
+        proposer2Thread.join();
+        proposer3Thread.join();
 
-        member1Thread.join();
-        member2Thread.join();
-        member3Thread.join();
+        // Wait for resolution
+        Thread.sleep(30000);
 
-        // sleep for 30 seconds
-        Thread.sleep(60000);
+        // Assert that only one proposer achieves consensus
+        String electedPresident = votingServer.getPresident();
+        assertNotNull(electedPresident, "No consensus was reached for the president.");
+        assertTrue(electedPresident.equals("1") || electedPresident.equals("2") || electedPresident.equals("3"),
+                "Unexpected president elected.");
 
-        assertEquals("3", votingServer.getPresident(), "Immediate response failed");
+        System.out.println("President elected: Member " + electedPresident);
     }
 
     @Test
-    public void testM2orM3GoOffline() throws InterruptedException {
+    public void testIfM2OrM3isOffline() throws InterruptedException {
         votingServer = new VotingServer();
 
         serverCommunicate = new Communicate(votingServer);

@@ -15,111 +15,117 @@ import main.votingServer.VotingServer;
 
 public class MemberTest {
 
+    // test: verify member ID is returned correctly
     @Test
-    public void testGetMemberId() {
+    public void testMemberIdRetrieval() {
         Member member = new Member("1", mock(Communicate.class), mock(VotingServer.class));
         assertEquals("1", member.getMemberId());
     }
 
+    // test: check generated proposal numbers increment correctly
     @Test
-    public void testGenerateProposalNumber() {
+    public void testProposalNumberGeneration() {
         Member member = new Member("1", mock(Communicate.class), mock(VotingServer.class));
         assertEquals("1:1", member.generateProposalNumber());
         assertEquals("1:2", member.generateProposalNumber());
     }
 
+    // test: verify setting and getting the highest seen proposal number
     @Test
-    public void testSetAndGetHighestSeenProposalNumber() {
+    public void testHighestProposalNumberTracking() {
         Member member = new Member("1", mock(Communicate.class), mock(VotingServer.class));
         member.setHighestSeenProposalNumber("1:3");
         assertEquals("1:3", member.getHighestSeenProposalNumber());
     }
 
+    // test: ensure delay times are initialized correctly based on member ID
     @Test
-    public void testSendPrepareRequest() {
+    public void testDelayTimeInitialization() {
+        Member member1 = new Member("1", mock(Communicate.class), mock(VotingServer.class));
+        assertEquals(0, member1.getDelayTime()); // no delay for member 1
+
+        Member member2 = new Member("2", mock(Communicate.class), mock(VotingServer.class));
+        assertEquals(10000, member2.getDelayTime()); // fixed delay for member 2
+
+        Member member3 = new Member("3", mock(Communicate.class), mock(VotingServer.class));
+        assertTrue(member3.getDelayTime() >= 4000 && member3.getDelayTime() <= 9000); // random delay for member 3
+
+        Member memberDefault = new Member("999", mock(Communicate.class), mock(VotingServer.class));
+        assertTrue(memberDefault.getDelayTime() >= 4000 && memberDefault.getDelayTime() <= 9000); // random delay for others
+    }
+
+    // test: verify delay time can be manually updated
+    @Test
+    public void testSetCustomDelayTime() {
+        Member member = new Member("1", mock(Communicate.class), mock(VotingServer.class));
+        member.setDelayTime(5000);
+        assertEquals(5000, member.getDelayTime());
+    }
+
+    // test: validate prepare request broadcasting
+    @Test
+    public void testPrepareRequestBroadcasting() {
         Communicate mockComm = mock(Communicate.class);
         VotingServer mockServer = mock(VotingServer.class);
         Member member = new Member("1", mockComm, mockServer);
 
         member.sendPrepareRequest();
-        verify(mockServer).broadcast(anyString()); // Update as necessary
+        verify(mockServer).broadcast(anyString()); // ensure broadcast is called
     }
 
+    // test: ensure no messages are sent when member is offline
     @Test
-    public void testDelayTimeInitialization() {
-        // Member ID 1
-        Member member1 = new Member("1", mock(Communicate.class), mock(VotingServer.class));
-        assertEquals(0, member1.getDelayTime());
-
-        // Member ID 2
-        Member member2 = new Member("2", mock(Communicate.class), mock(VotingServer.class));
-        assertEquals(10000, member2.getDelayTime());
-
-        // Member ID 3
-        Member member3 = new Member("3", mock(Communicate.class), mock(VotingServer.class));
-        assertTrue(member3.getDelayTime() >= 4000 && member3.getDelayTime() <= 9000);
-
-        // Default case
-        Member memberDefault = new Member("999", mock(Communicate.class), mock(VotingServer.class));
-        assertTrue(memberDefault.getDelayTime() >= 4000 && memberDefault.getDelayTime() <= 9000);
-    }
-
-    @Test
-    public void testSendRejectWhenOffline() {
+    public void testRejectMessageWhenOffline() {
         Communicate mockComm = mock(Communicate.class);
         VotingServer mockServer = mock(VotingServer.class);
         Member member = new Member("1", mockComm, mockServer);
-        member.forceOffline();
+        member.forceOffline(); // simulate member going offline
         member.sendReject("1:4");
 
-        verify(mockComm, never()).sendMessage(anyString(), anyString());
+        verify(mockComm, never()).sendMessage(anyString(), anyString()); // verify no message sent
     }
 
+    // test: ensure promise messages are sent when member is online
     @Test
-    public void testSendPromiseWhenOnline() {
+    public void testPromiseMessageWhenOnline() {
         Communicate mockComm = mock(Communicate.class);
         VotingServer mockServer = mock(VotingServer.class);
         Member member = new Member("1", mockComm, mockServer);
+
         member.sendPromise("2", "1:1", null);
-
-        // Verifying that a message is sent when the member is online
-        verify(mockComm).sendMessage(eq("2"), anyString());
+        verify(mockComm).sendMessage(eq("2"), anyString()); // verify message sent to proposer
     }
 
+    // test: validate accepted proposal is stored correctly
     @Test
-    public void testSetAcceptedProposal() {
+    public void testAcceptedProposalStorage() {
         Communicate mockComm = mock(Communicate.class);
         VotingServer mockServer = mock(VotingServer.class);
         Member member = new Member("1", mockComm, mockServer);
-        AcceptedProposal pair = new AcceptedProposal();
-        pair.setAcceptedProposal("1.2", "value2");
-        member.setAcceptedProposal("1:1", pair);
 
-        assertEquals(pair, member.getAcceptedProposal());
+        AcceptedProposal proposal = new AcceptedProposal();
+        proposal.setAcceptedProposal("1.2", "value2");
+        member.setAcceptedProposal("1:1", proposal);
+
+        assertEquals(proposal, member.getAcceptedProposal());
     }
 
+    // test: ensure lower proposal numbers do not overwrite accepted proposals
     @Test
-    public void testSetAcceptedProposalWithLowerProposalNumber() {
+    public void testIgnoreLowerProposalNumbers() {
         Communicate mockComm = mock(Communicate.class);
         VotingServer mockServer = mock(VotingServer.class);
         Member member = new Member("1", mockComm, mockServer);
-        AcceptedProposal pair1 = new AcceptedProposal();
-        pair1.setAcceptedProposal("1.2", "value2");
-        AcceptedProposal pair2 = new AcceptedProposal();
-        pair2.setAcceptedProposal("1.1", "value1");
-        member.setAcceptedProposal("1:1", pair1);
-        member.setAcceptedProposal("1:2", pair2);
 
-        assertNotEquals("1:1", member.getAcceptedProposal().getProposalNumber());
+        AcceptedProposal proposal1 = new AcceptedProposal();
+        proposal1.setAcceptedProposal("1.2", "value2");
+
+        AcceptedProposal proposal2 = new AcceptedProposal();
+        proposal2.setAcceptedProposal("1.1", "value1");
+
+        member.setAcceptedProposal("1:1", proposal1);
+        member.setAcceptedProposal("1:2", proposal2);
+
+        assertEquals(proposal1, member.getAcceptedProposal()); // proposal1 should remain
     }
-
-    @Test
-    public void testSetDelayTime() {
-        Communicate mockComm = mock(Communicate.class);
-        VotingServer mockServer = mock(VotingServer.class);
-        Member member = new Member("1", mockComm, mockServer);
-        member.setDelayTime(5000);
-        assertEquals(5000, member.getDelayTime());
-    }
-
 }
