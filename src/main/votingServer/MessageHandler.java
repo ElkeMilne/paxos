@@ -5,12 +5,12 @@ import java.util.Map;
 
 public interface MessageHandler {
 
-    // handles incoming messages from members
+    // handles incoming messages from multipleMembers
     void handleMessage(String message, String memberId);
 
-    // gets the map of connected sockets for all members
+    // gets the map of connected sockets for all multipleMembers
     public Map<String, Socket> getSocketMap();
 
-    // gets the map of ports assigned to each member
+    // gets the map of multiPorts assigned to each member
     public Map<String, Integer> getPortMap();
 }

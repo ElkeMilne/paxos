@@ -6,7 +6,7 @@ MAIN_SOURCES = src/main/communication/Communicate.java \
           src/main/member/AcceptedProposal.java \
           src/main/votingServer/MessageHandler.java \
           src/main/votingServer/VotingServer.java \
-          src/main/Main.java
+          src/main/Paxos.java
 
 TEST_SOURCES = src/test/PaxosTest.java \
 					src/test/MemberTest.java \
@@ -27,7 +27,7 @@ test: compile-test
 	@$(JAVA) $(CPTEST) $(TEST_MAIN_CLASS) --scan-classpath
 
 run: compile
-	java -cp bin main.Main
+	java -cp bin main.Paxos
 
 clean:
 	rm -rf bin/*

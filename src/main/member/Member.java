@@ -111,8 +111,8 @@ public class Member {
         return this.delayTime;
     }
 
-    // Send a PREPARE request to all members.
-    // Send a PREPARE request to all members with improved logging and error handling.
+    // Send a PREPARE request to all multipleMembers.
+    // Send a PREPARE request to all multipleMembers with improved logging and error handling.
     public void sendPrepareRequest() {
         if (goOffline()) {
             System.out.println("Member " + memberId + " is offline. Cannot send PREPARE request.");
@@ -131,7 +131,7 @@ public class Member {
         String prepareMessage = "PREPARE " + proposalNum;
 
         try {
-            votingServer.broadcast(prepareMessage); // Broadcast the PREPARE message to all members.
+            votingServer.broadcast(prepareMessage); // Broadcast the PREPARE message to all multipleMembers.
             System.out.println("Member " + memberId + " sent PREPARE request: " + prepareMessage);
         } catch (Exception e) {
             System.err.println("Failed to broadcast PREPARE request from member " + memberId);
@@ -158,7 +158,7 @@ public class Member {
         }
     }
 
-    // Send an ACCEPT request to all members.
+    // Send an ACCEPT request to all multipleMembers.
     public synchronized void sendAcceptRequest(String proposalNum, String proposalVal, String currentMemberId) {
         if (goOffline()) {
             return; // Skip if offline.

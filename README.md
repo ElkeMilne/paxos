@@ -9,10 +9,10 @@ This year, Adelaide Suburbs Council is holding elections for council president. 
 3. **Member 3 (M3):** Also keen candidate to become president, can go offline because of their camping trips
 4. **Members 4 to 9 (M4-M9):** Neutral participants who vote fairly
 
-On the day of the vote, one of the councillors will send out an email/message to all councillors with a proposal for a president. A majority (half+1) is required for somebody to be elected president. The election protocol involves a proposer sending a candidate's name for the presidency. To achieve consensus, the majority of members must agree on a single candidate.
+On the day of the vote, one of the councillors will send out an email/message to all councillors with a proposal for a president. A majority (half+1) is required for somebody to be elected president. The election protocol involves a proposer sending a candidate's name for the presidency. To achieve consensus, the majority of multipleMembers must agree on a single candidate.
 
 ### Objective
-Develop a Paxos-based distributed system where members communicate through sockets. The system must handle delays, failures, and disconnections while ensuring consensus.
+Develop a Paxos-based distributed system where multipleMembers communicate through sockets. The system must handle delays, failures, and disconnections while ensuring consensus.
 
 ---
 
@@ -48,12 +48,12 @@ Paxos is a consensus algorithm that ensures distributed systems agree on a singl
 ### `PaxosTesting`
 Simulates various scenarios to ensure Paxos implementation robustness:
 1. **Concurrent Proposals:** Validates the system's ability to handle competing proposals.
-2. **Immediate Responses:** Ensures quick resolution when members respond without delay.
+2. **Immediate Responses:** Ensures quick resolution when multipleMembers respond without delay.
 3. **Member Failure:** Tests the system's fault tolerance when a member goes offline.
 
 ### `VotingServerTest`
 Verifies the functionalities of the `VotingServer` class:
-- Manages members (`testSetMembers`).
+- Manages multipleMembers (`testSetMembers`).
 - Broadcasts messages (`testBroadcast`).
 - Compares proposal IDs (`testCompareProposalNumbers`).
 

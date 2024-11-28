@@ -17,22 +17,22 @@ import main.votingServer.VotingServer;
 
 class VotingServerTest {
 
-    // test: verify members and their ports are set correctly in the voting server
+    // test: verify multipleMembers and their multiPorts are set correctly in the voting server
     @Test
     void testSetMembersCorrectly() {
         VotingServer server = new VotingServer();
-        List<Member> members = new ArrayList<>();
-        List<Integer> ports = new ArrayList<>();
+        List<Member> multipleMembers = new ArrayList<>();
+        List<Integer> multiPorts = new ArrayList<>();
 
-        members.add(new Member("1", mock(Communicate.class), server));
-        members.add(new Member("2", mock(Communicate.class), server));
-        ports.add(4567);
-        ports.add(4568);
+        multipleMembers.add(new Member("1", mock(Communicate.class), server));
+        multipleMembers.add(new Member("2", mock(Communicate.class), server));
+        multiPorts.add(4567);
+        multiPorts.add(4568);
 
-        server.setMembers(members, ports);
+        server.setMembers(multipleMembers, multiPorts);
 
         Map<String, Integer> portMap = server.getPortMap();
-        assertEquals(2, portMap.size()); // ensure two members are added
+        assertEquals(2, portMap.size()); // ensure two multipleMembers are added
         assertEquals(4567, portMap.get("1")); // check correct port for member 1
         assertEquals(4568, portMap.get("2")); // check correct port for member 2
     }
@@ -58,7 +58,7 @@ class VotingServerTest {
         server.setCommunicate(mockCommunicate);
     }
 
-    // test: check broadcasting a message to all members
+    // test: check broadcasting a message to all multipleMembers
     @Test
     void testBroadcastingMessages() {
         VotingServer server = new VotingServer();
@@ -101,8 +101,8 @@ class VotingServerTest {
         server.setCommunicate(mockCommunicate);
         Member member = new Member("1", mockCommunicate, server);
 
-        List<Member> members = Arrays.asList(member);
-        server.setMembers(members, Arrays.asList(8080));
+        List<Member> multipleMembers = Arrays.asList(member);
+        server.setMembers(multipleMembers, Arrays.asList(8080));
 
         server.handleMessage("PREPARE 1:1", "1"); // handle a prepare message
     }
@@ -115,8 +115,8 @@ class VotingServerTest {
         server.setCommunicate(mockCommunicate);
         Member member = new Member("1", mockCommunicate, server);
 
-        List<Member> members = Arrays.asList(member);
-        server.setMembers(members, Arrays.asList(8080));
+        List<Member> multipleMembers = Arrays.asList(member);
+        server.setMembers(multipleMembers, Arrays.asList(8080));
 
         server.handleMessage("PROMISE 1:1", "1"); // handle a promise message
     }
@@ -131,7 +131,7 @@ class VotingServerTest {
         server.addMember("1", socket1);
         server.addMember("2", socket2);
 
-        server.closeAllSockets();
+        server.closeSockets();
 
         verify(socket1, times(1)).close(); // verify socket 1 is closed
         verify(socket2, times(1)).close(); // verify socket 2 is closed

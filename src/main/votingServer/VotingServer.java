@@ -12,12 +12,12 @@ import main.member.Member;
 
 public class VotingServer implements MessageHandler {
 
-    private List<Member> members; // list of all members
+    private List<Member> multipleMembers; // list of all multipleMembers
     private Map<String, Integer> promiseCount; // counts promises for proposals
     private Map<String, Integer> acceptedCount; // counts accepted proposals
     Communicate communicate; // handles communication
     Map<String, Socket> socketMap = new HashMap<>(); // tracks sockets by member id
-    Map<String, Integer> portMap = new HashMap<>(); // tracks ports by member id
+    Map<String, Integer> portMap = new HashMap<>(); // tracks multiPorts by member id
     private final Object lock = new Object(); // lock for sync
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1); // timeout scheduler
     private final Map<String, ScheduledFuture<?>> timeouts = new ConcurrentHashMap<>(); // tracks proposal timeouts
@@ -28,10 +28,10 @@ public class VotingServer implements MessageHandler {
         this.acceptedCount = new HashMap<>(); // init accepted count
     }
 
-    public void setMembers(List<Member> members, List<Integer> port) {
-        this.members = members; // save members
-        for (int i = 0; i < members.size(); i++) {
-            portMap.put(members.get(i).getMemberId(), port.get(i)); // map member ids to ports
+    public void setMembers(List<Member> multipleMembers, List<Integer> port) {
+        this.multipleMembers = multipleMembers; // save multipleMembers
+        for (int i = 0; i < multipleMembers.size(); i++) {
+            portMap.put(multipleMembers.get(i).getMemberId(), port.get(i)); // map member ids to multiPorts
         }
     }
 
@@ -47,7 +47,7 @@ public class VotingServer implements MessageHandler {
     @Override
     public void handleMessage(String message, String memberId) {
         if (president != null) {
-            closeAllSockets();  // stop if president decided
+            closeSockets();  // stop if president decided
             return;
         }
         String[] parts = message.split(" ");
@@ -61,13 +61,13 @@ public class VotingServer implements MessageHandler {
         } else if (messageType.equals("ACCEPTED")) {
             handleAccepted(message, memberId);
         } else {
-            handleReject(message, memberId);
+            handleRejection(message, memberId);
         }
     }
 
     public void broadcast(String message) {
-        for (Member member : members) {
-            communicate.sendMessage(member.getMemberId(), message); // send message to all members
+        for (Member member : multipleMembers) {
+            communicate.sendMessage(member.getMemberId(), message); // send message to all multipleMembers
         }
     }
 
@@ -91,7 +91,7 @@ public class VotingServer implements MessageHandler {
                 .println("[" + formattedDateTime + "]" + " Member " + memberId + " received prepareRequest from proposer "
                         + proposerId
                         + " with proposalNum " + proposalNum);
-        Member currentMember = members.stream().filter(m -> m.getMemberId().equals(memberId)).findFirst().get();
+        Member currentMember = multipleMembers.stream().filter(m -> m.getMemberId().equals(memberId)).findFirst().get();
         if (currentMember.getHighestSeenProposalNumber() == null
                 || compareProposalNumbers(proposalNum, currentMember.getHighestSeenProposalNumber())) {
             currentMember.setHighestSeenProposalNumber(proposalNum);
@@ -110,7 +110,7 @@ public class VotingServer implements MessageHandler {
 
     private void handlePromise(String message, String memberId) {
         synchronized (lock) {
-            Member currentMember = members.stream().filter(m -> m.getMemberId().equals(memberId)).findFirst().get();
+            Member currentMember = multipleMembers.stream().filter(m -> m.getMemberId().equals(memberId)).findFirst().get();
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
             String formattedDateTime = now.format(formatter);
@@ -146,7 +146,7 @@ public class VotingServer implements MessageHandler {
     }
 
     private void handleAcceptRequest(String message, String memberId) {
-        Member currentMember = members.stream().filter(m -> m.getMemberId().equals(memberId)).findFirst().get();
+        Member currentMember = multipleMembers.stream().filter(m -> m.getMemberId().equals(memberId)).findFirst().get();
         String[] parts = message.split(" ");
         String proposalNum = parts[1];
         String proposerId = parts[1].split(":")[0];
@@ -194,7 +194,7 @@ public class VotingServer implements MessageHandler {
                 System.out.println(
                         "[" + formattedDateTime + "]" + " Member " + proposerValue + " is decided to become a president");
                 president = proposerValue;  // set president
-                closeAllSockets();   // close sockets
+                closeSockets();   // close sockets
                 communicate.closeServerSocket();    // stop communication
             }
         }
@@ -252,7 +252,7 @@ public class VotingServer implements MessageHandler {
         }
     }
 
-    private void handleReject(String message, String memberId) {
+    private void handleRejection(String message, String memberId) {
         String[] parts = message.split(" ");
         String proposalNum = parts[1];
         LocalDateTime now = LocalDateTime.now();
@@ -262,7 +262,7 @@ public class VotingServer implements MessageHandler {
                 .println("[" + formattedDateTime + "]" + " Proposal " + proposalNum + " is rejected by member " + memberId);
     }
 
-    public void closeAllSockets() {
+    public void closeSockets() {
         synchronized (lock) {
             for (Socket socket : socketMap.values()) {
                 try {
