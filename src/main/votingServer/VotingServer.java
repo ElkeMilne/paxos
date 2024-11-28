@@ -105,7 +105,7 @@ public class VotingServer implements MessageHandler {
             // Send a reject message
             currentMember.sendReject(proposalNum);
         }
-        scheduleTimeoutForProposal(proposalNum);
+        timeoutForProposal(proposalNum);
     }
 
     private void handlePromise(String message, String memberId) {
@@ -166,7 +166,7 @@ public class VotingServer implements MessageHandler {
         } else {
             currentMember.sendReject(proposalNum);   //reject proposal
         }
-        scheduleTimeoutForAcceptRequest(proposalNum);
+        timeoutForAcceptReq(proposalNum);
     }
 
     private void handleAccepted(String message, String memberId) {
@@ -200,7 +200,7 @@ public class VotingServer implements MessageHandler {
         }
     }
 
-    private void scheduleTimeoutForProposal(String proposalNum) {
+    private void timeoutForProposal(String proposalNum) {
         ScheduledFuture<?> timeout = scheduler.schedule(() -> {
             // cancel proposal
             //start new
@@ -209,7 +209,7 @@ public class VotingServer implements MessageHandler {
         timeouts.put("proposal:" + proposalNum, timeout);
     }
 
-    private void scheduleTimeoutForAcceptRequest(String proposalNum) {
+    private void timeoutForAcceptReq(String proposalNum) {
         ScheduledFuture<?> timeout = scheduler.schedule(() -> {
             // cancel accept request
             // start new

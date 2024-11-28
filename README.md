@@ -66,6 +66,8 @@ Validates the behavior of the `Member` class:
 ---
 
 ## Running the Application
+Disclaimer: Takes around 6-7 minutes to finish running all 26 tests. Please be paitient!! I have also attached a png incase you have difficulties running the tests - you should
+be able to run however on any operating system. I havent tried different versions of java however, but I am running java 21
 
 ### Compile and Run
 make all
