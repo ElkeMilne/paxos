@@ -1,5 +1,4 @@
 # ASSIGNMENT 3 - Adelaide Suburbs Council Election - Paxos Voting Protocol Implementation
-## Nghia Hoang - a1814303
 ## Assignment Description
 This year, the Adelaide Suburbs Council is holding elections for the council president. Any of the nine members can become the council president. Members have varied responsiveness and preferences:
 
@@ -15,47 +14,8 @@ On the election day, one councillor will send a proposal for a president, and a 
 
 The task is to implement a Paxos voting protocol that is fault-tolerant and can handle various communicate delays and failures. Communicate is recommended to be done via sockets.
 
-## Folder Structure
-The project is structured in a modular fashion to maintain clarity and manageability. Here is the breakdown of the folder structure:
 
-```bash
-ds-assignment3
-│
-├── communicate
-│
-├── member
-│   ├── AcceptedProposal.java
-│   └── Member.java
-│
-├── votingServer
-│   ├── MessageHandler.java
-│   ├── VotingServer.java
-│   └── Main.class
-│
-├── test
-│   ├── MemberTest.java
-│   ├── PaxosTest.java
-│   └── VotingServerTest.java
-│
-├── lib
-│   ├── Various .jar files (e.g., junit, gson, mockito, etc.)
-│
-├── src
-│   ├── main
-│   │   ├── communicate
-│   │   ├── member
-│   │   └── votingServer
-│   └── test
-│
-├── .gitignore
-│
-├── makefile
-│
-└── README.md
-
-```
-
-## The Paxos Protocol
+## What Is Paxos
 
 Paxos is a consensus algorithm designed to achieve agreement within distributed systems, even in the face of partial system failures. The protocol operates in distinct phases, ensuring that nodes in a distributed system agree upon a single piece of data or value.
 
