@@ -1,18 +1,15 @@
 package main;
 
+import java.util.ArrayList;
+import java.util.List;
 import main.communicate.Communicate;
 import main.member.Member;
 import main.votingServer.VotingServer;
 
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Main {
 
     public static void main(String[] args) {
-        // Initialize the vote server
+        // Initialise the vote server
         VotingServer votingServer = new VotingServer();
 
         // Initialize communicate

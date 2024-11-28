@@ -1,15 +1,15 @@
 # Assignment 3: Adelaide Suburbs Council Election - Paxos Consensus Implementation
 
 ## Overview
-The Adelaide Suburbs Council is organizing elections to select its next president. Nine council members, each with distinct responsiveness and availability, are eligible for the role. The Paxos algorithm will be used to implement a distributed voting protocol that ensures fault-tolerance, even in challenging network conditions.
+This year, Adelaide Suburbs Council is holding elections for council president. Any member of its nine person council is eligible to become council president.
 
 ### Member Characteristics:
-1. **Member 1 (M1):** Highly responsive and experienced in council matters.
-2. **Member 2 (M2):** Interested in leadership but experiences slow communication due to geographic challenges.
-3. **Member 3 (M3):** Occasionally goes offline due to personal activities but is actively campaigning.
-4. **Members 4 to 9 (M4-M9):** Neutral participants who vote impartially.
+1. **Member 1 (M1):** Highly responsive and experienced in running for president
+2. **Member 2 (M2):** Interested in becoming president, however due to his remote location will have very slow response time
+3. **Member 3 (M3):** Also keen candidate to become president, can go offline because of their camping trips
+4. **Members 4 to 9 (M4-M9):** Neutral participants who vote fairly
 
-The election protocol involves a proposer sending a candidate's name for the presidency. To achieve consensus, the majority of members must agree on a single candidate.
+On the day of the vote, one of the councillors will send out an email/message to all councillors with a proposal for a president. A majority (half+1) is required for somebody to be elected president. The election protocol involves a proposer sending a candidate's name for the presidency. To achieve consensus, the majority of members must agree on a single candidate.
 
 ### Objective
 Develop a Paxos-based distributed system where members communicate through sockets. The system must handle delays, failures, and disconnections while ensuring consensus.
@@ -17,49 +17,29 @@ Develop a Paxos-based distributed system where members communicate through socke
 ---
 
 ## Paxos Algorithm Overview
-Paxos is a widely used protocol for achieving agreement in distributed systems. It operates in phases to ensure consensus on a single value, even when some nodes fail.
-
-### Key Steps
-1. **Proposal Initiation:** A proposer generates a unique ID for their proposal and checks if the acceptors have seen any higher proposal IDs.
-2. **Consensus Achievement:** If most acceptors agree, the proposer can finalize the value.
+Paxos is a consensus algorithm that ensures distributed systems agree on a single value or decision, even in the presence of faults or unreliable communication.
 
 ### Detailed Breakdown
-#### Phase 1: Preparation & Promises
-- **Proposer Action:** Sends a `PREPARE` message with a unique proposal ID to acceptors.
-- **Acceptor Response:**
-  - Ignores the proposal if the ID is not the highest it has seen.
-  - Sends a `PROMISE` if the proposal ID is the highest, including details of any previously accepted value.
+## **Overview of Paxos**
 
-#### Phase 2: Proposal Acceptance
-- **Proposer Action:** Sends an `ACCEPT` message with the chosen value to acceptors after receiving majority promises.
-- **Acceptor Action:**
-  - Accepts if the proposal ID is the highest.
-  - Sends an `ACCEPTED` message to all learners to confirm consensus.
+### **Roles in Paxos**
+- **Proposer**: Sends proposals for consensus.
+- **Acceptor**: Votes on proposals and ensures agreement.
+- **Learner**: Learns the decided value (not explicitly required here).
 
----
+### **Phases of Paxos**
+1. **Prepare Phase**:
+   - The proposer sends a `Prepare` message with a unique proposal ID to all acceptors.
+   - Acceptors respond with the highest proposal ID they have seen and any previously accepted value.
+2. **Accept Phase**:
+   - The proposer sends an `Accept` message with a value based on responses from Phase 1.
+   - Acceptors respond only if the proposal ID matches or exceeds the highest seen proposal ID.
+3. **Decision**:
+   - If a majority (quorum) of acceptors agree, the value is finalized.
 
-## Class Implementations
-
-### `Member` Class
-Represents a participant in the Paxos protocol. Each `Member` acts as a proposer, acceptor, and learner.
-
-#### Features
-- **Identity & Communication:** Uniquely identified by a `memberId` and uses the `Communicate` object for interactions.
-- **Proposal Management:** Tracks and generates proposal IDs and stores the highest proposal seen.
-- **Voting Logic:** Handles `PREPARE`, `PROMISE`, `ACCEPT`, `REJECT`, and `ACCEPTED` messages.
-- **Delay Simulation:** Introduces response delays based on member behavior for realistic testing.
-- **Offline Management:** Simulates forced or random disconnections.
-
----
-
-### `VotingServer` Class
-Centralized component coordinating the Paxos protocol. Manages communication and consensus logic.
-
-#### Features
-1. **Message Processing:** Handles messages like `PREPARE`, `PROMISE`, `ACCEPT`, and `ACCEPTED`.
-2. **Node Management:** Keeps track of all `Member` objects and their communication ports.
-3. **Timeout Handling:** Uses scheduled tasks to handle timeouts for proposals.
-4. **Consensus Election:** Decides on the council president based on majority agreement.
+### **Fault Tolerance**
+- **Majority-based Quorum**: Progress continues as long as a majority of nodes are functional.
+- **Resilience to Failures**: Handles message delays, loss, and inconsistent states effectively.
 
 ---
 
@@ -88,13 +68,11 @@ Validates the behavior of the `Member` class:
 ## Running the Application
 
 ### Compile and Run
-To compile the code, run:
 make all
 
 ### Running tests
-To run tests, run:
 make test
 
 ### CLean
-Remove compiled files using:
+Remove compiled class:
 make clean
