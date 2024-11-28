@@ -1,131 +1,100 @@
-# ASSIGNMENT 3 - Adelaide Suburbs Council Election - Paxos Voting Protocol Implementation
-## Assignment Description
-This year, the Adelaide Suburbs Council is holding elections for the council president. Any of the nine members can become the council president. Members have varied responsiveness and preferences:
+# Assignment 3: Adelaide Suburbs Council Election - Paxos Consensus Implementation
 
-- `Member M1`: Extremely responsive and has been in the council president's race for a long time.
+## Overview
+The Adelaide Suburbs Council is organizing elections to select its next president. Nine council members, each with distinct responsiveness and availability, are eligible for the role. The Paxos algorithm will be used to implement a distributed voting protocol that ensures fault-tolerance, even in challenging network conditions.
 
-- `Member M2`: Desires the presidency but has a very slow response time due to their remote location.
+### Member Characteristics:
+1. **Member 1 (M1):** Highly responsive and experienced in council matters.
+2. **Member 2 (M2):** Interested in leadership but experiences slow communication due to geographic challenges.
+3. **Member 3 (M3):** Occasionally goes offline due to personal activities but is actively campaigning.
+4. **Members 4 to 9 (M4-M9):** Neutral participants who vote impartially.
 
-- `Member M3`: Also vies for the presidency, but sometimes goes offline because of camping trips.
+The election protocol involves a proposer sending a candidate's name for the presidency. To achieve consensus, the majority of members must agree on a single candidate.
 
-- `Members M4-M9`: Have no particular ambition for presidency and will vote fairly.
+### Objective
+Develop a Paxos-based distributed system where members communicate through sockets. The system must handle delays, failures, and disconnections while ensuring consensus.
 
-On the election day, one councillor will send a proposal for a president, and a majority is required to elect someone.
+---
 
-The task is to implement a Paxos voting protocol that is fault-tolerant and can handle various communicate delays and failures. Communicate is recommended to be done via sockets.
+## Paxos Algorithm Overview
+Paxos is a widely used protocol for achieving agreement in distributed systems. It operates in phases to ensure consensus on a single value, even when some nodes fail.
 
-
-## What Is Paxos
-
-Paxos is a consensus algorithm designed to achieve agreement within distributed systems, even in the face of partial system failures. The protocol operates in distinct phases, ensuring that nodes in a distributed system agree upon a single piece of data or value.
-
-### High-Level Overview
-
-1. Proposal Initiation: A proposer generates a unique proposal ID and checks with the acceptors if anyone has already seen a proposal with a higher ID. If not, the proposer proposes a value.
-
-2. Reaching Consensus: If a majority of acceptors promise to accept the proposer's proposal, consensus can be achieved.
+### Key Steps
+1. **Proposal Initiation:** A proposer generates a unique ID for their proposal and checks if the acceptors have seen any higher proposal IDs.
+2. **Consensus Achievement:** If most acceptors agree, the proposer can finalize the value.
 
 ### Detailed Breakdown
+#### Phase 1: Preparation & Promises
+- **Proposer Action:** Sends a `PREPARE` message with a unique proposal ID to acceptors.
+- **Acceptor Response:**
+  - Ignores the proposal if the ID is not the highest it has seen.
+  - Sends a `PROMISE` if the proposal ID is the highest, including details of any previously accepted value.
 
-### Phase 1: Proposer (PREPARE) & Acceptor (PROMISE)
+#### Phase 2: Proposal Acceptance
+- **Proposer Action:** Sends an `ACCEPT` message with the chosen value to acceptors after receiving majority promises.
+- **Acceptor Action:**
+  - Accepts if the proposal ID is the highest.
+  - Sends an `ACCEPTED` message to all learners to confirm consensus.
 
-- The proposer creates a unique, ever-incrementing identification number (ID) for its proposal. This ID is sent to the acceptors in a `PREPARE` message.
-- Acceptors, upon receiving the `PREPARE` message, compare the received ID with any they've previously seen.
-If the received ID is less than or equal to a previously seen ID, the acceptor may either ignore the message or respond with a `REJECT` message.
-  - If the ID is the highest the acceptor has seen, they promise not to accept proposals with smaller IDs. If they've already accepted a proposal in the past, they respond with a `PROMISE` message that includes that proposal's ID and value. Otherwise, they simply send back a `PROMISE` with the received ID.
+---
 
-### Phase 2a: Proposer (PROPOSE)
+## Class Implementations
 
-- Upon receiving `PROMISE` responses from a majority of acceptors, the proposer examines the responses:
-  - If any of the acceptors sent back an accepted value, the proposer is obligated to use this value in its proposal.
-  - Otherwise, the proposer can choose any value it sees fit.
-- The proposer then sends out a `ACCEPT` message to the acceptors with its chosen value and ID.
+### `Member` Class
+Represents a participant in the Paxos protocol. Each `Member` acts as a proposer, acceptor, and learner.
 
-### Phase 2b: Acceptor (ACCEPT)
+#### Features
+- **Identity & Communication:** Uniquely identified by a `memberId` and uses the `Communicate` object for interactions.
+- **Proposal Management:** Tracks and generates proposal IDs and stores the highest proposal seen.
+- **Voting Logic:** Handles `PREPARE`, `PROMISE`, `ACCEPT`, `REJECT`, and `ACCEPTED` messages.
+- **Delay Simulation:** Introduces response delays based on member behavior for realistic testing.
+- **Offline Management:** Simulates forced or random disconnections.
 
-- Acceptors decide on the proposal based on its ID:
-  - If the ID is the largest they've seen, they accept the proposal, store its details, and notify all learners of the accepted value with an `ACCEPTED` message.
-  - If not, they can choose to ignore or respond with a "fail" message.
-The protocol achieves consensus when a majority of acceptors accept the same proposal. It's vital to note that the consensus is on the proposed value, not on the proposal ID.
+---
 
-In summary, the Paxos algorithm first ensures that proposals are unique and then gets the distributed system to agree on a particular proposal's value. Once this consensus is reached, the value can be safely acted upon or stored in the system.
+### `VotingServer` Class
+Centralized component coordinating the Paxos protocol. Manages communication and consensus logic.
 
-## Member Class
-The Member class represents a node in a distributed consensus protocol, likely inspired by the Paxos algorithm.
+#### Features
+1. **Message Processing:** Handles messages like `PREPARE`, `PROMISE`, `ACCEPT`, and `ACCEPTED`.
+2. **Node Management:** Keeps track of all `Member` objects and their communication ports.
+3. **Timeout Handling:** Uses scheduled tasks to handle timeouts for proposals.
+4. **Consensus Election:** Decides on the council president based on majority agreement.
 
-### Features
+---
 
-1. Identity & Communicate: Each Member is uniquely identified by a memberId and utilizes the communicate mechanism to interact with other nodes.
+## Testing Framework
 
-2. Proposal Management: Each member can generate and manage proposal numbers and keeps a record of the highest proposal it has observed.
+### `PaxosTest`
+Simulates various scenarios to ensure Paxos implementation robustness:
+1. **Concurrent Proposals:** Validates the system's ability to handle competing proposals.
+2. **Immediate Responses:** Ensures quick resolution when members respond without delay.
+3. **Member Failure:** Tests the system's fault tolerance when a member goes offline.
 
-3. Voting Mechanics: With the help of an associated VotingServer, a member can handle and store accepted proposals.
+### `VotingServerTest`
+Verifies the functionalities of the `VotingServer` class:
+- Manages members (`testSetMembers`).
+- Broadcasts messages (`testBroadcast`).
+- Compares proposal IDs (`testCompareProposalNumbers`).
 
-4. Delays & Latencies: The class can introduce operational delays, influenced by the member's identifier. This can be used to mimic real-world network latencies or for testing scenarios.
+### `MemberTest`
+Validates the behavior of the `Member` class:
+- Generates and tracks proposal IDs.
+- Simulates delays and offline states.
+- Ensures correct handling of messages like `PROMISE` and `ACCEPTED`.
 
-5. Handling Offline States: Members can be set to offline modes either forcibly or randomly, representing scenarios like node failures or network disconnections.
+---
 
-6. Consensus Communicate: The member manages several consensus-related messages:
-    - Prepare: Initiates a proposal.
-    - Promise: Responds to prepare requests, possibly with previously accepted proposal details.
-    - Accept: Solicits acceptance of a proposal from other nodes.
-    - Reject: Declines a proposal.
-    - Accepted: Confirms a proposal's acceptance.
-    - Result: Announces the final consensus value to all nodes.
+## Running the Application
 
-## VotingServer Class
-The VotingServer class is responsible for handling the voting operations in a distributed system.
+### Compile and Run
+To compile the code, run:
+make all
 
-### Features
-
-1. Consensus Mechanism: Uses the Paxos consensus algorithm to handle and process voting messages.
-2. Message Handling: Processes various message types, including PREPARE, `PROMISE`, `ACCEPT`, and `ACCEPTED`.
-3. Member Management: Manages a list of Member objects, each representing a participant in the voting process.
-4. Timeout Management: Utilizes scheduled tasks to handle timeouts for proposals and accept requests.
-5. President Election: Determines the "president" or the leader based on a majority consensus.
-
-## Testing
-### PaxosTest
-1. `testConcurrentVotingProposals`:
-This test simulates a scenario where two members concurrently send prepare requests to become the president. The `VotingServer` and a list of `Member` instances are created, and ports are assigned to each member. Two separate threads (`member1Thread` and `member2Thread`) are initiated, each representing a member sending a prepare request. After both threads complete execution, the test asserts that the president selected is "1". This test demonstrates the Paxos algorithm's ability to handle concurrent proposals and resolve them correctly.
-
-2. `testImmediateResponse`
-The test checks how the Paxos algorithm handles immediate responses from members when selecting a president. Similar to the previous test, a VotingServer is set up along with members. Here, three threads (`member1Thread`, `member2Thread`, and `member3Thread`) are used, each starting a prepare request from different members. The test asserts that member "3" is elected as president, verifying that the system can manage immediate and multiple responses in the election process.
-
-3. `testM2orM3GoOffline`
-This test investigates the algorithm's behavior when one of the members (member 3 in this case) goes offline during the election process. The setup is similar to previous tests but includes a call to `forceOffline()` for member 3. Despite member 3 initiating a prepare request, the test validates that member "1" becomes the president. This scenario tests the resilience of the Paxos implementation in handling member failures or network issues.
-
-### VotingServerTest
-the `VotingServerTest` includes various tests to validate the functionalities of the VotingServer class. These tests cover member management (`testSetMembers`, `testAddMember`), communicate setup (`testSetCommunicate`), broadcasting messages to all members (`testBroadcast`), and comparing proposal numbers (`testCompareProposalNumbers`). Additional tests ensure correct initial conditions like testGetPresidentInitiallyNull, and message handling (`testHandleMessagePrepare`, `testHandleMessagePromise`). The suite ensures the robustness and correctness of the `VotingServer` class's responsibilities in the Paxos algorithm.
-
-### MemberTest
-The `MemberTest` class focuses on testing the `Member` class functionalities. It includes tests for basic operations like retrieving a member ID (`testGetMemberId`), generating proposal numbers (`testGenerateProposalNumber`), and setting/getting the highest seen proposal number (`testSetAndGetHighestSeenProposalNumber`). It also tests critical functionalities related to the Paxos protocol, such as sending prepare requests (`testSendPrepareRequest`), managing response delays (`testDelayTimeInitialization`), and handling member states (online/offline) in sending responses (`testSendRejectWhenOffline`, `testSendPromiseWhenOnline`). Moreover, the ability of members to set and respect proposal pairs is checked (`testSetAcceptedProposal`, `testSetAcceptedProposalWithLowerProposalNumber`), along with the customization of delay times (`testSetDelayTime`). These tests collectively ensure the Member class accurately represents and behaves as a Paxos protocol participant.
-
-## Run
-### Compiling
-To compile the main application, run:
-
-```bash
-make
-```
-This will compile all necessary .java files in the src/main directory into the bin directory.
-
-### Running Tests
-To compile and run the tests:
-
-```bash
+### Running tests
+To run tests, run:
 make test
-```
-This will compile both the main and test classes and then run the tests using JUnit.
 
-### Note:
-Please note that running `PaxosTest` can take up to approximately 6 minutes to complete. This duration is necessary due to the time required for the Paxos algorithm to execute within the test.
-
-### Cleaning up
-
-After running tests, or when you want to start fresh, you can clean up the compiled `.class` files by running:
-
-```bash
+### CLean
+Remove compiled files using:
 make clean
-```
-This command will search for all `.class` files and remove them, ensuring a clean environment.

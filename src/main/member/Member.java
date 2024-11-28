@@ -16,14 +16,14 @@ public class Member {
     private boolean isForcedOffline; // Whether the member is forced offline.
     private boolean isRandomOffline; // Whether the member can go offline randomly.
 
-    // Constructor: Sets up the member with default delay times based on ID.
+    // constructor: Sets up the member with default delay times based on ID.
     public Member(String memberId, Communicate communicate, VotingServer votingServer) {
         this.memberId = memberId;
         this.communicate = communicate;
         this.votingServer = votingServer;
         this.proposalValue = memberId;
 
-        // Assign delay time based on member ID.
+        // assign delay time based on member ID.
         switch (Integer.parseInt(memberId)) {
             case 1:
                 this.delayTime = 0; // No delay for member 1.
@@ -57,7 +57,7 @@ public class Member {
         return this.acceptedProposalPair;
     }
 
-    // Generate a new proposal number (unique to this member).
+    // Generate a new proposal number unique to each member
     public String generateProposalNumber() {
         count++;
         return memberId + ":" + count;
